@@ -1,6 +1,8 @@
 ﻿Imports System.IO
 Imports System.Xml
 Imports AppPrintAdministrator_VB.AppPrintAdministrator_VB
+Imports iTextSharp.text
+Imports iTextSharp.text.pdf
 Imports OfficeOpenXml
 Imports OfficeOpenXml.Style
 Public Class SalePrints
@@ -122,61 +124,6 @@ Public Class SalePrints
 
 	End Sub
 
-	Private Sub btnExportpdfXML_Click(sender As Object, e As EventArgs) Handles btnExportpdfXML.Click
-		Dim saveFile As New SaveFileDialog()
-		saveFile.Filter = "XML files (*.xml)|*.xml"
-		saveFile.Title = "Save file"
-
-		If saveFile.ShowDialog() <> DialogResult.OK Then
-			MessageBox.Show("No file selected")
-			Return
-		End If
-
-		Try
-			Using xmlWriter As XmlWriter = XmlWriter.Create(saveFile.FileName)
-				xmlWriter.WriteStartDocument()
-				xmlWriter.WriteStartElement("Sales")
-
-				For Each row As DataGridViewRow In dgvSalePrint.Rows
-					If Not row.IsNewRow Then
-						xmlWriter.WriteStartElement("Sale")
-
-						xmlWriter.WriteElementString("Size", If(row.Cells("Size").Value?.ToString(), ""))
-						xmlWriter.WriteElementString("Name", If(row.Cells("Name").Value?.ToString(), ""))
-						xmlWriter.WriteElementString("SalesOptions", If(row.Cells("SalesOptions").Value?.ToString(), ""))
-
-						Dim price As Double = 0.0
-						Double.TryParse(row.Cells("Price").Value?.ToString(), price)
-						xmlWriter.WriteElementString("Price", price.ToString("F2"))
-
-						Dim quantity As Integer = 0
-						Integer.TryParse(row.Cells("Quantity").Value?.ToString(), quantity)
-						xmlWriter.WriteElementString("Quantity", quantity.ToString())
-
-						Dim total As Double = 0.0
-						Double.TryParse(row.Cells("Total").Value?.ToString(), total)
-						xmlWriter.WriteElementString("Total", total.ToString("F2"))
-
-						xmlWriter.WriteEndElement()
-					End If
-				Next
-
-				xmlWriter.WriteStartElement("Summary")
-				xmlWriter.WriteElementString("Subtotal", If(String.IsNullOrEmpty(txtSubtotal.Text), "0.00", txtSubtotal.Text))
-				xmlWriter.WriteElementString("IVA", If(String.IsNullOrEmpty(txtIVA.Text), "0.00", txtIVA.Text))
-				xmlWriter.WriteElementString("Total", If(String.IsNullOrEmpty(txtTotal.Text), "0.00", txtTotal.Text))
-				xmlWriter.WriteEndElement()
-
-				xmlWriter.WriteEndElement()
-				xmlWriter.WriteEndDocument()
-			End Using
-			MessageBox.Show("File saved successfully!")
-		Catch ex As Exception
-			MessageBox.Show("An error occurred while saving the file: " & ex.Message)
-		End Try
-
-	End Sub
-
 	Private Sub btnexportsalesexcel_Click(sender As Object, e As EventArgs) Handles btnexportsalesexcel.Click
 		Dim saveFile As New SaveFileDialog()
 		saveFile.Filter = "Excel files (*.xlsx)|*.xlsx"
@@ -286,5 +233,163 @@ Public Class SalePrints
 		txtIVA.Text = iva.ToString("F2")
 	End Sub
 
+	Private Sub btnExportinvoice_Click(sender As Object, e As EventArgs) Handles btnExportinvoice.Click
+
+		Select Case cb_ExportInvoice.Text.ToUpper()
+			Case "XML"
+				Try
+					Dim saveFileexport As New SaveFileDialog()
+					saveFileexport.Filter = "XML files (*.xml)|*.xml"
+					saveFileexport.Title = "Save file"
+					If saveFileexport.ShowDialog() <> DialogResult.OK Then
+						MessageBox.Show("No file selected")
+						Return
+					End If
+					Dim filePathXML As String = saveFileexport.FileName
+					Using xmlWriter As XmlWriter = XmlWriter.Create(filePathXML)
+						xmlWriter.WriteStartDocument()
+						xmlWriter.WriteStartElement("Sales")
+
+						For Each row As DataGridViewRow In dgvSalePrint.Rows
+							If Not row.IsNewRow Then
+								xmlWriter.WriteStartElement("Sale")
+
+								xmlWriter.WriteElementString("Size", If(row.Cells("Size").Value?.ToString(), String.Empty))
+								xmlWriter.WriteElementString("Name", If(row.Cells("Name").Value?.ToString(), String.Empty))
+								xmlWriter.WriteElementString("SalesOptions", If(row.Cells("SalesOptions").Value?.ToString(), String.Empty))
+
+								Dim price As Double = 0.0
+								Double.TryParse(row.Cells("Price").Value?.ToString(), price)
+								xmlWriter.WriteElementString("Price", price.ToString("F2"))
+
+								Dim quantity As Integer = 0
+								Integer.TryParse(row.Cells("Quantity").Value?.ToString(), quantity)
+								xmlWriter.WriteElementString("Quantity", quantity.ToString())
+
+								Dim total As Double = 0.0
+								Double.TryParse(row.Cells("Total").Value?.ToString(), total)
+								xmlWriter.WriteElementString("Total", total.ToString("F2"))
+
+								xmlWriter.WriteEndElement()
+							End If
+						Next
+
+						xmlWriter.WriteStartElement("Summary")
+						xmlWriter.WriteElementString("Subtotal", If(String.IsNullOrEmpty(txtSubtotal.Text), "0.00", txtSubtotal.Text))
+						xmlWriter.WriteElementString("IVA", If(String.IsNullOrEmpty(txtIVA.Text), "0.00", txtIVA.Text))
+						xmlWriter.WriteElementString("Total", If(String.IsNullOrEmpty(txtTotal.Text), "0.00", txtTotal.Text))
+						xmlWriter.WriteEndElement()
+
+						xmlWriter.WriteEndElement()
+						xmlWriter.WriteEndDocument()
+					End Using
+					MessageBox.Show("File saved successfully!")
+				Catch ex As Exception
+					MessageBox.Show("An error occurred while saving the file: " & ex.Message)
+				End Try
+
+			Case "JSON"
+				Dim saveFilejson As New SaveFileDialog()
+				saveFilejson.Filter = "Json files (*.json)|*.json"
+				saveFilejson.Title = "Save file"
+
+				If saveFilejson.ShowDialog() <> DialogResult.OK Then
+					MessageBox.Show("No file selected")
+					Return
+				End If
+				Dim filePath As String = saveFilejson.FileName
+				Dim salesList As New List(Of Object)()
+
+				For Each row As DataGridViewRow In dgvSalePrint.Rows
+					If Not row.IsNewRow Then
+						Dim sale = New With {
+					.Size = If(row.Cells("Size").Value?.ToString(), String.Empty),
+					.Name = If(row.Cells("Name").Value?.ToString(), String.Empty),
+					.SalesOptions = If(row.Cells("SalesOptions").Value?.ToString(), String.Empty),
+					.Price = Convert.ToDouble(row.Cells("Price").Value),
+					.Quantity = Convert.ToInt32(row.Cells("Quantity").Value),
+					.Total = Convert.ToDouble(row.Cells("Total").Value)
+				}
+
+						Dim saleInfo As String = $"Size: {sale.Size}{Environment.NewLine}" &
+										 $"Name: {sale.Name}{Environment.NewLine}" &
+										 $"Sales Options: {sale.SalesOptions}{Environment.NewLine}" &
+										 $"Price: {sale.Price}{Environment.NewLine}" &
+										 $"Quantity: {sale.Quantity}{Environment.NewLine}" &
+										 $"Total: {sale.Total}{Environment.NewLine}"
+
+						salesList.Add(saleInfo)
+					End If
+				Next
+
+				Dim jsonString As String = System.Text.Json.JsonSerializer.Serialize(salesList)
+				File.WriteAllText(filePath, jsonString)
+
+				MessageBox.Show("File successfully saved as JSON ")
+
+			Case "PDF"
+				Dim document As New Document()
+				Dim saveFilePDF As New SaveFileDialog()
+				saveFilePDF.Filter = "PDF files (*.PDF)|*.PDF"
+				saveFilePDF.Title = "Save file"
+
+				If saveFilePDF.ShowDialog() <> DialogResult.OK Then
+					MessageBox.Show("No file selected")
+					Return
+				End If
+				Dim filePathPDF As String = saveFilePDF.FileName
+				Try
+					PdfWriter.GetInstance(document, New FileStream(filePathPDF, FileMode.Create))
+					document.Open()
+					Dim table As New PdfPTable(dgvSalePrint.Columns.Count)
+					For i As Integer = 0 To dgvSalePrint.Columns.Count - 1
+						table.AddCell(New PdfPCell(New Phrase(dgvSalePrint.Columns(i).HeaderText)))
+					Next
+
+
+					For i As Integer = 0 To dgvSalePrint.Rows.Count - 1
+						If Not dgvSalePrint.Rows(i).IsNewRow Then
+							For j As Integer = 0 To dgvSalePrint.Columns.Count - 1
+								table.AddCell(New PdfPCell(New Phrase(dgvSalePrint.Rows(i).Cells(j).Value.ToString())))
+							Next
+						End If
+					Next
+					table.AddCell("")
+					table.AddCell("")
+					table.AddCell("")
+					table.AddCell("")
+					table.AddCell("Total:")
+					table.AddCell(txtTotal.Text)
+					table.AddCell("")
+					table.AddCell("")
+					table.AddCell("")
+					table.AddCell("")
+					table.AddCell("IVA:")
+					table.AddCell(txtIVA.Text)
+					table.AddCell("")
+					table.AddCell("")
+					table.AddCell("")
+					table.AddCell("")
+					table.AddCell("Total Final:")
+					table.AddCell(txtTotal.Text)
+
+					document.Add(table)
+					document.Close()
+
+					MessageBox.Show("File saved successfully!")
+
+				Catch ex As Exception
+					MessageBox.Show("An error occurred while saving the file: " & ex.Message)
+				End Try
+			Case Else
+				MessageBox.Show("No data entry")
+
+		End Select
+
+
+
+
+
+	End Sub
 End Class
 

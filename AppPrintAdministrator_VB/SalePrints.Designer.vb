@@ -22,7 +22,6 @@ Partial Class SalePrints
 	'No lo modifique con el editor de código.
 	<System.Diagnostics.DebuggerStepThrough()> _
 	Private Sub InitializeComponent()
-		btnExportpdfXML = New Button()
 		txtChange = New TextBox()
 		btnExporttxtpaper = New Button()
 		btnclearcontrols = New Button()
@@ -55,22 +54,12 @@ Partial Class SalePrints
 		cbAvailablepaper = New ComboBox()
 		cbSalesOptions = New ComboBox()
 		label4 = New Label()
+		cb_ExportInvoice = New ComboBox()
+		btnExportinvoice = New Button()
 		CType(dgvSalePrint, ComponentModel.ISupportInitialize).BeginInit()
 		groupBox2.SuspendLayout()
 		groupBox1.SuspendLayout()
 		SuspendLayout()
-		' 
-		' btnExportpdfXML
-		' 
-		btnExportpdfXML.BackColor = Color.DarkSalmon
-		btnExportpdfXML.Font = New Font("Cambria", 13.8F, FontStyle.Bold)
-		btnExportpdfXML.ForeColor = SystemColors.ButtonHighlight
-		btnExportpdfXML.Location = New Point(154, 412)
-		btnExportpdfXML.Name = "btnExportpdfXML"
-		btnExportpdfXML.Size = New Size(223, 64)
-		btnExportpdfXML.TabIndex = 13
-		btnExportpdfXML.Text = "Export Invoice"
-		btnExportpdfXML.UseVisualStyleBackColor = False
 		' 
 		' txtChange
 		' 
@@ -289,8 +278,9 @@ Partial Class SalePrints
 		' 
 		' groupBox2
 		' 
+		groupBox2.Controls.Add(cb_ExportInvoice)
+		groupBox2.Controls.Add(btnExportinvoice)
 		groupBox2.Controls.Add(btnexportsalesexcel)
-		groupBox2.Controls.Add(btnExportpdfXML)
 		groupBox2.Controls.Add(btncalculate)
 		groupBox2.Controls.Add(txtChange)
 		groupBox2.Controls.Add(label9)
@@ -316,7 +306,7 @@ Partial Class SalePrints
 		btnexportsalesexcel.BackColor = Color.YellowGreen
 		btnexportsalesexcel.Font = New Font("Cambria", 13.8F, FontStyle.Bold)
 		btnexportsalesexcel.ForeColor = SystemColors.ButtonHighlight
-		btnexportsalesexcel.Location = New Point(154, 496)
+		btnexportsalesexcel.Location = New Point(154, 416)
 		btnexportsalesexcel.Name = "btnexportsalesexcel"
 		btnexportsalesexcel.Size = New Size(223, 64)
 		btnexportsalesexcel.TabIndex = 22
@@ -439,6 +429,28 @@ Partial Class SalePrints
 		label4.TabIndex = 4
 		label4.Text = "Sales " & vbCrLf & "Options"
 		' 
+		' cb_ExportInvoice
+		' 
+		cb_ExportInvoice.Font = New Font("Cambria", 10.2F)
+		cb_ExportInvoice.FormattingEnabled = True
+		cb_ExportInvoice.Items.AddRange(New Object() {"XML", "JSON", "PDF"})
+		cb_ExportInvoice.Location = New Point(169, 501)
+		cb_ExportInvoice.Name = "cb_ExportInvoice"
+		cb_ExportInvoice.Size = New Size(186, 28)
+		cb_ExportInvoice.TabIndex = 24
+		' 
+		' btnExportinvoice
+		' 
+		btnExportinvoice.BackColor = Color.DarkSalmon
+		btnExportinvoice.Font = New Font("Cambria", 13.8F, FontStyle.Bold)
+		btnExportinvoice.ForeColor = SystemColors.ButtonHighlight
+		btnExportinvoice.Location = New Point(154, 547)
+		btnExportinvoice.Name = "btnExportinvoice"
+		btnExportinvoice.Size = New Size(223, 64)
+		btnExportinvoice.TabIndex = 23
+		btnExportinvoice.Text = "Export Invoice "
+		btnExportinvoice.UseVisualStyleBackColor = False
+		' 
 		' SalePrints
 		' 
 		AutoScaleDimensions = New SizeF(8F, 20F)
@@ -458,8 +470,6 @@ Partial Class SalePrints
 		groupBox1.PerformLayout()
 		ResumeLayout(False)
 	End Sub
-
-	Private WithEvents btnExportpdfXML As Button
 	Private WithEvents txtChange As TextBox
 	Private WithEvents btnExporttxtpaper As Button
 	Private WithEvents btnclearcontrols As Button
@@ -492,4 +502,6 @@ Partial Class SalePrints
 	Private WithEvents cbAvailablepaper As ComboBox
 	Private WithEvents cbSalesOptions As ComboBox
 	Private WithEvents label4 As Label
+	Private WithEvents cb_ExportInvoice As ComboBox
+	Private WithEvents btnExportinvoice As Button
 End Class
